@@ -2,6 +2,7 @@
 const express = require( 'express' );
 const router = express.Router();
 const pool = require( '../modules/pool' );
+const { query } = require('../modules/pool');
 
 router.get( '/', ( req, res )=>{
     console.log( '/movies GET hit' );
@@ -19,8 +20,15 @@ router.get( '/', ( req, res )=>{
 }) // end /movies GET
 
 router.post( '/', ( req, res )=>{
-    console.log( '/movies POST hit, tryin to add movie:', req.body );
-    res.send( 'ribbet' )
+    console.log( '/movies POST hit:', req.body );
+    const queryString = `INSERT INTO movies ( title, poster, description ) values ( $1, $2, $3 )`; // tested in Postico and hard coded at first before using $wildcards
+    // try, then, catch with pool.query
+    pool.query( queryString, [ req.body.title, req.body.poster, req.body.description ] ).then( ( results )=>{
+        res.sendStatus( 201 );
+    }).catch( ( err )=>{
+        console.log( '------------------------> ERROR ADDING MOVIE:', err );
+        res.sendStatus( 500 );
+    })
 }) // end POST
 
 // exports
